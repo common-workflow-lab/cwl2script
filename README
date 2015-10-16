@@ -36,3 +36,28 @@ echo '{
         "class": "File"
     }
 }'
+
+$ cwl2script test/revsort.cwl test/revsort-job.json > workflow.sh
+$ sh workflow.sh
++ mkdir -p /tmp/tmpXBEvw5
++ mkdir -p /tmp/tmpsvOqNs
++ rev /home/peter/work/cwl2script/test/whale.txt
++ rm -r /tmp/tmpsvOqNs
++ mkdir -p /tmp/tmpNq3QxP
++ mkdir -p /tmp/tmpYjrRnw
++ sort --reverse /tmp/tmpXBEvw5/output.txt
++ rm -r /tmp/tmpYjrRnw
++ mv /tmp/tmpNq3QxP/output.txt .
++ rm -r /tmp/tmpXBEvw5 /tmp/tmpNq3QxP
++ echo {
+    "output": {
+        "path": "output.txt",
+        "class": "File"
+    }
+}
+{
+    "output": {
+        "path": "output.txt",
+        "class": "File"
+    }
+}
