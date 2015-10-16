@@ -1,1 +1,38 @@
 This compiles simple common workflow language workflows to a shell script.
+
+Example:
+
+$ cwl2script test/revsort.cwl test/revsort-job.json
+#!/bin/sh
+
+# Workflow generated from file:///home/peter/work/cwl2script/test/revsort.cwl using cwl2script
+set -x
+
+# Run step file:///home/peter/work/cwl2script/test/revsort.cwl#rev
+# depends on step file:///home/peter/work/cwl2script/test/revsort.cwl
+mkdir -p /tmp/tmpwDQXXq  # output directory
+mkdir -p /tmp/tmpWwRuUa  # temporary directory
+rev /home/peter/work/cwl2script/test/whale.txt > /tmp/tmpwDQXXq/output.txt
+rm -r /tmp/tmpWwRuUa     # clean up temporary directory
+
+# Run step file:///home/peter/work/cwl2script/test/revsort.cwl#sorted
+# depends on step file:///home/peter/work/cwl2script/test/revsort.cwl#rev
+# depends on step file:///home/peter/work/cwl2script/test/revsort.cwl
+mkdir -p /tmp/tmp2i5tmU  # output directory
+mkdir -p /tmp/tmpEGP9Nz  # temporary directory
+sort --reverse /tmp/tmpwDQXXq/output.txt > /tmp/tmp2i5tmU/output.txt
+rm -r /tmp/tmpEGP9Nz     # clean up temporary directory
+
+# Move output files to the current directory
+mv /tmp/tmp2i5tmU/output.txt .
+
+# Clean up staging output directories
+rm -r /tmp/tmpwDQXXq /tmp/tmp2i5tmU
+
+# Generate final output object
+echo '{
+    "output": {
+        "path": "output.txt",
+        "class": "File"
+    }
+}'
