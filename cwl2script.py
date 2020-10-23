@@ -1,10 +1,13 @@
 import argparse
+from cwltool.load_tool import load_tool
+from cwltool.workflow import default_make_tool
+from cwltool.context import LoadingContext, RuntimeContext
 import cwltool.main
 import sys
 import os
 import schema_salad
 import logging
-from cwltool.process import checkRequirements, shortname, adjustFiles
+from cwltool.process import checkRequirements, shortname
 import shellescape
 import re
 import copy
@@ -16,8 +19,8 @@ glob_metacharacters = re.compile(r"""[\[\]\*?]""").search
 def maybe_quote(arg):
     return shellescape.quote(arg) if needs_shell_quoting(arg) else arg
 
-def generateScriptForTool(tool, job, outdir):
-    for j in tool.job(job, "", None, outdir=outdir):
+def generateScriptForTool(tool, job, runtime_context):
+    for j in tool.job(job, None, runtime_context):
         return ("""mkdir -p %s  # output directory
 mkdir -p %s  # temporary directory
 %s%s%s
@@ -30,7 +33,7 @@ rm -r %s     # clean up temporary directory
                 j.outdir, j.tmpdir)
 
 
-def generateScriptForWorkflow(cwlwf, cwljob, outdir):
+def generateScriptForWorkflow(cwlwf, cwljob, runtime_context):
     promises = {}
     jobs = {}
     script = ["#!/bin/sh",
@@ -79,7 +82,7 @@ def generateScriptForWorkflow(cwlwf, cwljob, outdir):
                             d = copy.copy(inp["default"])
                             jobobj[shortname(inp["id"])] = d
 
-                    (wfjob, joboutdir, jobtmpdir) = generateScriptForTool(step.embedded_tool, jobobj, None)
+                    (wfjob, joboutdir, jobtmpdir) = generateScriptForTool(step.embedded_tool, jobobj, runtime_context)
                     outdirs.append(joboutdir)
 
                     jobs[step.tool["id"]] = True
@@ -159,7 +162,10 @@ def main(args=None):
 
     job, _ = loader.resolve_ref(uri)
 
-    t = cwltool.main.load_tool(options.cwltool, False, False, cwltool.workflow.defaultMakeTool, True)
+    loading_context = LoadingContext({"strict": False, "debug":True})
+    t = load_tool(options.cwltool, loading_context)
+    #, False, False, default_make_tool, True)
+    # updateOnly=False, strict=False, makeTool=default_make_tool, debug=True  ???
 
     if type(t) == int:
         return t
@@ -187,12 +193,11 @@ def main(args=None):
     if not options.basedir:
         options.basedir = os.path.dirname(os.path.abspath(options.cwljob))
 
-    outdir = options.outdir
-
+    runtime_context = RuntimeContext({"outdir": options.outdir})
     if t.tool["class"] == "Workflow":
-        print generateScriptForWorkflow(t, job, outdir)
+        print(generateScriptForWorkflow(t, job, runtime_context))
     elif t.tool["class"] == "CommandLineTool":
-        print generateScriptForTool(t, job, outdir)
+        print(generateScriptForTool(t, job, runtime_context))
 
     return 0
 

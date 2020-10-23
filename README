@@ -2,7 +2,7 @@ This compiles simple common workflow language workflows to a shell script.
 
 Example:
 
-$ cwl2script test/revsort.cwl test/revsort-job.json
+$ cwl2script test/revsort.cwl test/revsort-job.yaml
 #!/bin/sh
 
 # Workflow generated from file:///home/peter/work/cwl2script/test/revsort.cwl using cwl2script
@@ -37,7 +37,7 @@ echo '{
     }
 }'
 
-$ cwl2script test/revsort.cwl test/revsort-job.json > workflow.sh
+$ cwl2script test/revsort.cwl test/revsort-job.yaml > workflow.sh
 $ sh workflow.sh
 + mkdir -p /tmp/tmpXBEvw5
 + mkdir -p /tmp/tmpsvOqNs
